@@ -197,3 +197,70 @@ Run initial_load.py → creates tables + loads data
 View ERD in assets/erd.png
 
 Query your PostgreSQL database
+
+Environmental Conditions Dashboard — Power BI
+Overview
+This Power BI dashboard visualizes environmental conditions using data pulled from a PostgreSQL database. It includes temperature trends, pollen levels (after unpivoting), air quality, and planting readiness. The visuals are designed to stay clean and easy to interpret, and everything updates when the user interacts with the slicer.
+
+Features
+KPIs
+Avg Planting Readiness
+
+Avg AQI
+
+Avg Pollen
+
+Visuals
+Daily Temperature Trend
+
+Daily Pollen Levels (using unpivoted structure)
+
+Weekly Avg Planting Readiness
+
+All visuals respond to the slicer
+
+Interactivity
+Day slicer that filters the entire dashboard
+
+KPIs and charts update automatically
+
+Data Integration
+Connected to PostgreSQL (Supabase)
+
+Uses fact and dimension tables
+
+Clean joins through datetime_id
+
+Pollen columns reshaped using Power Query (unpivot)
+
+Layout
+KPIs at the top
+
+Main visuals centered
+
+Slicer on the left
+
+Simple, readable layout
+
+Tech Stack
+Power BI Desktop
+
+PostgreSQL (Supabase)
+
+Power Query
+
+DAX
+
+How to Use
+Open the .pbix file
+
+Confirm the PostgreSQL connection string
+
+Refresh the data
+
+Use the slicer to filter by day
+
+Explore the visuals
+
+Business Value
+The dashboard gives a quick, practical view of how temperature, pollen, and air quality relate to planting readiness. It helps identify favorable planting days and shows how environmental conditions shift over time. The layout keeps everything straightforward so users can focus on the patterns without getting lost in the details.
