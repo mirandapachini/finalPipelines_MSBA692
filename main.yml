@@ -1,8 +1,6 @@
 name: Run Supabase ETL
 
 on:
-  schedule:
-    - cron: "0 10 * * *"
   workflow_dispatch:
 
 jobs:
@@ -22,11 +20,6 @@ jobs:
         run: |
           pip install python-dotenv psycopg2-binary pandas sqlalchemy
 
-      - name: Debug — list files
-        run: |
-          pwd
-          ls -R .
-
       - name: Run ETL
         env:
           DB_HOST: ${{ secrets.DB_HOST }}
@@ -35,4 +28,4 @@ jobs:
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
-          python etl/api_etl.py
+          python api_etl.py
