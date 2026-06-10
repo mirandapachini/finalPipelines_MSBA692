@@ -26,6 +26,6 @@ jobs:
           DB_USER: "postgres.jaluakardtzemqerpdpk"
           DB_PASSWORD: "Un61zM51qN30O3Nw"
           SUPABASE_URL: "https://jaluakardtzemqerpdpk.supabase.co"
-          
-          run: |
-          python api_etl.py
+                    
+            run:
+              python api_etl.py
