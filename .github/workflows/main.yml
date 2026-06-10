@@ -20,12 +20,12 @@ jobs:
           pip install python-dotenv psycopg2-binary pandas sqlalchemy supabase requests
       - name: Run ETL
         env:
-          DB_HOST: "aws-1-us-west-2.pooler.supabase.com"
-          DB_PORT: "5432"
-          DB_NAME: "postgres"
-          DB_USER: "postgres.jaluakardtzemqerpdpk"
-          DB_PASSWORD: "Un61zM51qN30O3Nw"
-          SUPABASE_URL: "https://jaluakardtzemqerpdpk.supabase.co"
-                    
-            run:
-              python api_etl.py
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          python api_etl.py
