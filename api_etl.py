@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
 load_dotenv()
+print(f"DB_HOST={DB_HOST!r} DB_PORT={DB_PORT!r} DB_NAME={DB_NAME!r} DB_USER={DB_USER!r}")
 
 # ---------------------------------------------------------
 # 1. Initialize connections
