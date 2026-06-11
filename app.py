@@ -15,14 +15,12 @@ if not os.getenv("DB_PASSWORD"):
     raise EnvironmentError("DB_PASSWORD environment variable is required. Set it in your .env file or environment.")
 
 def get_data():
-    conn = psycopg2.connect(
-        host=os.getenv("DB_HOST", "aws-1-us-west-2.pooler.supabase.com"),
-        database=os.getenv("DB_NAME", "postgres"),
-        user=os.getenv("DB_USER", "postgres.jaluakardtzemqerpdpk"),
-        password=os.getenv("DB_PASSWORD")
-    )
-    df = pd.read_sql("SELECT * FROM staging_environmental_raw ORDER BY timestamp_local", conn)
-    conn.close()
+    from sqlalchemy import create_engine
+    password = os.getenv("DB_PASSWORD")
+    user = os.getenv("DB_USER", "postgres.jaluakardtzemqerpdpk")
+    host = os.getenv("DB_HOST", "aws-1-us-west-2.pooler.supabase.com")
+    engine = create_engine(f"postgresql+psycopg2://{user}:{password}@{host}/postgres")
+    df = pd.read_sql("SELECT * FROM staging_environmental_raw ORDER BY timestamp_local", engine)
     df["timestamp_local"] = pd.to_datetime(df["timestamp_local"])
     return df
 
