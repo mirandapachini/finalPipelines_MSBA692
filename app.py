@@ -23,6 +23,97 @@ def get_data():
     return df
 
 # -----------------------------------------------------------
+# PLANTING RECOMMENDATION ENGINE (Zone 6b / Louisville)
+# -----------------------------------------------------------
+def get_planting_recommendation(day_df):
+    now = day_df.iloc[0]
+    soil_temp = now["soil_temperature_0cm"]
+    soil_moisture = now["soil_moisture_0_to_1cm"]
+    max_temp = day_df["temperature_2m"].max()
+    min_temp = day_df["temperature_2m"].min()
+    allergy = day_df["allergy_risk"].mean()
+    rain_prob = day_df["precipitation_probability"].max()
+    max_wind = day_df["wind_speed_10m"].max()
+    month = pd.to_datetime(day_df["timestamp_local"].iloc[0]).month
+
+    # What to plant based on soil temp + month
+    plant_now = []
+    avoid = []
+    tips = []
+
+    # Soil temp rules (Farmers' Almanac thresholds)
+    if soil_temp >= 70:
+        plant_now += ["Tomatoes", "Peppers", "Basil", "Cucumbers", "Squash", "Okra"]
+    elif soil_temp >= 60:
+        plant_now += ["Beans", "Corn", "Melons", "Sweet potatoes"]
+    elif soil_temp >= 50:
+        plant_now += ["Lettuce", "Spinach", "Kale", "Peas", "Carrots", "Beets", "Radishes"]
+    elif soil_temp >= 40:
+        plant_now += ["Onions", "Garlic", "Broccoli", "Cabbage", "Cauliflower"]
+    else:
+        plant_now += ["Nothing — soil is too cold for outdoor planting"]
+
+    # Month-based additions (Zone 6b seasonal calendar)
+    if month in [3, 4]:
+        plant_now += ["Pansies", "Snapdragons", "Sweet peas"]
+        tips.append("Early spring: great time for cool-season crops before summer heat arrives.")
+    elif month in [5, 6]:
+        plant_now += ["Marigolds", "Zinnias", "Sunflowers"]
+        tips.append("Late spring: plant warm-season crops after last frost (avg. April 15 in Louisville).")
+    elif month in [7, 8]:
+        avoid.append("Starting new seedlings indoors — heat stress is high")
+        tips.append("Midsummer: water deeply in the morning and mulch to retain moisture.")
+    elif month in [9, 10]:
+        plant_now += ["Kale", "Spinach", "Garlic", "Mums", "Asters"]
+        tips.append("Fall planting window is open — get cool-season crops in before first frost (avg. Oct 15).")
+    elif month in [11, 12, 1, 2]:
+        plant_now = ["Garlic (if ground not frozen)", "Cover crops like winter rye"]
+        tips.append("Winter: focus on planning, soil amendment, and starting seeds indoors in late Feb.")
+
+    # Condition-based avoids
+    if rain_prob >= 60:
+        avoid.append("Planting seeds — heavy rain may wash them out or cause rot")
+    if max_wind > 20:
+        avoid.append("Transplanting seedlings — wind stress can damage young plants")
+    if soil_moisture > 0.4:
+        avoid.append("Tilling or digging — soil is too wet and will compact")
+    if allergy > 60:
+        avoid.append("Extended outdoor work — allergy risk is high today")
+
+    # Almanac tip based on conditions
+    if soil_temp >= 65 and rain_prob < 30 and allergy < 50:
+        almanac = "The Almanac says: ideal planting conditions today — warm soil, low rain risk, and clean air. Get those seeds in the ground!"
+    elif rain_prob >= 50:
+        almanac = "The Almanac says: rain incoming is actually helpful for newly planted seeds — but wait until after the rain to transplant seedlings."
+    elif allergy > 60:
+        almanac = "The Almanac says: high pollen days are best used for indoor garden prep — start seedlings, sharpen tools, or plan your layout."
+    elif soil_temp < 50:
+        almanac = "The Almanac says: patience is the gardener's greatest tool. Cold soil stunts root growth — wait for consistently warm soil before planting."
+    else:
+        almanac = "The Almanac says: observe your garden before acting. Check soil moisture by hand — it should feel like a wrung-out sponge before planting."
+
+    # Best time to garden
+    today_valid = day_df.dropna(subset=["allergy_risk"])
+    if not today_valid.empty:
+        today_valid = today_valid.copy()
+        today_valid["garden_score"] = today_valid["planting_readiness"] - today_valid["allergy_risk"]
+        best = today_valid.loc[today_valid["garden_score"].idxmax()]
+        best_time = pd.to_datetime(best["timestamp_local"]).strftime("%-I:%M %p")
+        timing = f"Best time to garden today: around {best_time} (peak planting conditions, lowest allergy risk)."
+    else:
+        timing = ""
+
+    return {
+        "plant_now": plant_now[:6],
+        "avoid": avoid if avoid else ["Nothing specific — conditions look good!"],
+        "tips": tips,
+        "almanac": almanac,
+        "timing": timing,
+        "soil_temp": soil_temp,
+        "allergy": allergy,
+    }
+
+# -----------------------------------------------------------
 # APP
 # -----------------------------------------------------------
 app = Dash(__name__)
@@ -48,25 +139,16 @@ def kpi_card(label, value, color=GREEN_DARK, subtitle=None):
     if subtitle:
         children.append(html.P(subtitle, style={"margin": "2px 0 0", "fontSize": "11px", "color": MUTED}))
     return html.Div(children, style={
-        "background": CARD,
-        "borderRadius": "12px",
-        "padding": "16px 20px",
-        "boxShadow": "0 1px 4px rgba(0,0,0,0.08)",
-        "flex": "1",
-        "minWidth": "130px",
+        "background": CARD, "borderRadius": "12px", "padding": "16px 20px",
+        "boxShadow": "0 1px 4px rgba(0,0,0,0.08)", "flex": "1", "minWidth": "130px",
     })
 
 def weather_emoji(precip_prob, wind_speed):
-    if precip_prob >= 70:
-        return "🌧️"
-    elif precip_prob >= 40:
-        return "🌦️"
-    elif precip_prob >= 20:
-        return "⛅"
-    elif wind_speed > 15:
-        return "💨"
-    else:
-        return "☀️"
+    if precip_prob >= 70:   return "🌧️"
+    elif precip_prob >= 40: return "🌦️"
+    elif precip_prob >= 20: return "⛅"
+    elif wind_speed > 15:   return "💨"
+    else:                   return "☀️"
 
 def aqi_label(aqi):
     if aqi <= 50:   return ("Good", GREEN_MID)
@@ -77,17 +159,12 @@ def aqi_label(aqi):
 
 app.layout = html.Div(style={"background": BG, "minHeight": "100vh", "fontFamily": "'Segoe UI', sans-serif", "color": TEXT}, children=[
 
-    # INTERVAL + STORE
     dcc.Interval(id="refresh", interval=60*60*1000, n_intervals=0),
     dcc.Store(id="store"),
 
-    # HEADER
     html.Div(id="header", style={"padding": "20px 32px 8px"}),
-
-    # SMART BANNERS ROW
     html.Div(id="banners", style={"padding": "0 32px 12px", "display": "flex", "gap": "12px", "flexWrap": "wrap"}),
 
-    # DAY SELECTOR
     html.Div([
         html.P("Select Day", style={"margin": "0 12px 0 0", "fontSize": "13px", "fontWeight": "600", "color": GREEN_DARK}),
         dcc.RadioItems(id="day-selector", inline=True,
@@ -96,12 +173,12 @@ app.layout = html.Div(style={"background": BG, "minHeight": "100vh", "fontFamily
         ),
     ], style={"display": "flex", "alignItems": "center", "padding": "0 32px 16px", "flexWrap": "wrap"}),
 
-    # KPI ROW
     html.Div(id="kpi-row", style={"display": "flex", "gap": "12px", "padding": "0 32px 16px", "flexWrap": "wrap"}),
 
-    # CHARTS
+    # PLANTING RECOMMENDATION CARD
+    html.Div(id="planting-card", style={"padding": "0 32px 16px"}),
+
     html.Div([
-        # Row 1
         html.Div([
             html.Div([
                 html.P("Planting Readiness & Allergy Risk", style={"margin": "0 0 4px", "fontWeight": "600", "color": GREEN_DARK}),
@@ -112,8 +189,6 @@ app.layout = html.Div(style={"background": BG, "minHeight": "100vh", "fontFamily
                 dcc.Graph(id="chart-temp", config={"displayModeBar": False}),
             ], style={"background": CARD, "borderRadius": "12px", "padding": "16px", "boxShadow": "0 1px 4px rgba(0,0,0,0.07)", "flex": "1"}),
         ], style={"display": "flex", "gap": "14px", "marginBottom": "14px"}),
-
-        # Row 2
         html.Div([
             html.Div([
                 html.P("Pollen Levels", style={"margin": "0 0 4px", "fontWeight": "600", "color": GREEN_DARK}),
@@ -124,8 +199,6 @@ app.layout = html.Div(style={"background": BG, "minHeight": "100vh", "fontFamily
                 dcc.Graph(id="chart-aqi", config={"displayModeBar": False}),
             ], style={"background": CARD, "borderRadius": "12px", "padding": "16px", "boxShadow": "0 1px 4px rgba(0,0,0,0.07)", "flex": "1"}),
         ], style={"display": "flex", "gap": "14px", "marginBottom": "14px"}),
-
-        # Row 3
         html.Div([
             html.Div([
                 html.P("Soil Temperature & Moisture", style={"margin": "0 0 4px", "fontWeight": "600", "color": GREEN_DARK}),
@@ -136,7 +209,6 @@ app.layout = html.Div(style={"background": BG, "minHeight": "100vh", "fontFamily
                 dcc.Graph(id="chart-precip", config={"displayModeBar": False}),
             ], style={"background": CARD, "borderRadius": "12px", "padding": "16px", "boxShadow": "0 1px 4px rgba(0,0,0,0.07)", "flex": "1"}),
         ], style={"display": "flex", "gap": "14px"}),
-
     ], style={"padding": "0 32px 32px"}),
 ])
 
@@ -153,30 +225,26 @@ def load_data(_):
 # -----------------------------------------------------------
 @callback(Output("header", "children"), Input("store", "data"))
 def update_header(json_data):
-    if not json_data:
-        return []
+    if not json_data: return []
     df = pd.read_json(io.StringIO(json_data), orient="split")
     df["timestamp_local"] = pd.to_datetime(df["timestamp_local"])
     now_row = df.iloc[0]
     today_str = datetime.now().strftime("%A, %B %-d, %Y")
     emoji = weather_emoji(now_row["precipitation_probability"], now_row["wind_speed_10m"])
     return html.Div([
+        html.Span(emoji, style={"fontSize": "36px", "marginRight": "14px"}),
         html.Div([
-            html.Span(emoji, style={"fontSize": "36px", "marginRight": "14px"}),
-            html.Div([
-                html.H1("Garden & Allergy Forecast", style={"margin": 0, "fontSize": "22px", "fontWeight": "700", "color": GREEN_DARK}),
-                html.P(f"Louisville, KY · {today_str}", style={"margin": 0, "fontSize": "13px", "color": MUTED}),
-            ]),
-        ], style={"display": "flex", "alignItems": "center"}),
-    ])
+            html.H1("Garden & Allergy Forecast", style={"margin": 0, "fontSize": "22px", "fontWeight": "700", "color": GREEN_DARK}),
+            html.P(f"Louisville, KY · {today_str}", style={"margin": 0, "fontSize": "13px", "color": MUTED}),
+        ]),
+    ], style={"display": "flex", "alignItems": "center"})
 
 # -----------------------------------------------------------
-# SMART BANNERS
+# BANNERS
 # -----------------------------------------------------------
 @callback(Output("banners", "children"), Input("store", "data"))
 def update_banners(json_data):
-    if not json_data:
-        return []
+    if not json_data: return []
     df = pd.read_json(io.StringIO(json_data), orient="split")
     df["timestamp_local"] = pd.to_datetime(df["timestamp_local"])
     today = df[df["timestamp_local"].dt.date == df["timestamp_local"].dt.date.min()].copy()
@@ -186,41 +254,34 @@ def update_banners(json_data):
         return html.Div([
             html.Span(emoji, style={"fontSize": "20px", "marginRight": "8px"}),
             html.Span(text, style={"fontSize": "13px", "fontWeight": "500"}),
-        ], style={
-            "background": bg, "color": color, "border": f"1px solid {color}",
-            "borderRadius": "10px", "padding": "10px 16px",
-            "display": "flex", "alignItems": "center",
-        })
+        ], style={"background": bg, "color": color, "border": f"1px solid {color}",
+                  "borderRadius": "10px", "padding": "10px 16px", "display": "flex", "alignItems": "center"})
 
-    # Best time to garden
     today_valid = today.dropna(subset=["allergy_risk", "planting_readiness"])
     if not today_valid.empty:
         today_valid = today_valid.copy()
         today_valid["garden_score"] = today_valid["planting_readiness"] - today_valid["allergy_risk"]
         best = today_valid.loc[today_valid["garden_score"].idxmax()]
         best_time = pd.to_datetime(best["timestamp_local"]).strftime("%-I%p").lower()
-        banners.append(banner("🌱", f"Best time to garden today: around {best_time} (low allergy + good conditions)", GREEN_DARK, "#E8F5EE"))
+        banners.append(banner("🌱", f"Best time to garden today: around {best_time}", GREEN_DARK, "#E8F5EE"))
 
-    # Next rain
     future_rain = df[df["precipitation_probability"] >= 50]
     if not future_rain.empty:
         next_rain = pd.to_datetime(future_rain.iloc[0]["timestamp_local"])
-        now = df["timestamp_local"].min()
-        hours_away = int((next_rain - now).total_seconds() / 3600)
+        hours_away = int((next_rain - df["timestamp_local"].min()).total_seconds() / 3600)
         if hours_away == 0:
             rain_msg = "Rain likely now — hold off on gardening"
         elif hours_away <= 3:
-            rain_msg = f"Rain expected in ~{hours_away} hour{'s' if hours_away != 1 else ''} — plan accordingly"
+            rain_msg = f"Rain expected in ~{hours_away} hour{'s' if hours_away != 1 else ''}"
         else:
             rain_msg = f"Next rain in ~{hours_away} hours ({next_rain.strftime('%-I%p %a').lower()})"
         banners.append(banner("🌧️", rain_msg, BLUE, "#EAF2FB"))
     else:
         banners.append(banner("☀️", "No rain expected in the next 7 days", GREEN_MID, "#E8F5EE"))
 
-    # Wind advisory
     max_wind = today["wind_speed_10m"].max() if not today.empty else 0
     if max_wind > 20:
-        banners.append(banner("💨", f"Wind advisory: gusts up to {max_wind:.0f} mph today — avoid spraying or seeding", RED, "#FEF0EC"))
+        banners.append(banner("💨", f"Wind advisory: gusts up to {max_wind:.0f} mph — avoid spraying or seeding", RED, "#FEF0EC"))
     elif max_wind > 12:
         banners.append(banner("🌬️", f"Breezy today (up to {max_wind:.0f} mph) — light outdoor work is fine", AMBER, "#FEF7EC"))
 
@@ -231,8 +292,7 @@ def update_banners(json_data):
 # -----------------------------------------------------------
 @callback(Output("day-selector", "options"), Output("day-selector", "value"), Input("store", "data"))
 def update_day_selector(json_data):
-    if not json_data:
-        return [], None
+    if not json_data: return [], None
     df = pd.read_json(io.StringIO(json_data), orient="split")
     df["timestamp_local"] = pd.to_datetime(df["timestamp_local"])
     days = df["timestamp_local"].dt.date.unique()
@@ -248,32 +308,85 @@ def update_day_selector(json_data):
 # -----------------------------------------------------------
 @callback(Output("kpi-row", "children"), Input("store", "data"), Input("day-selector", "value"))
 def update_kpis(json_data, selected_day):
-    if not json_data or not selected_day:
-        return []
+    if not json_data or not selected_day: return []
     df = pd.read_json(io.StringIO(json_data), orient="split")
     df["timestamp_local"] = pd.to_datetime(df["timestamp_local"])
     day_df = df[df["timestamp_local"].dt.date == pd.Timestamp(selected_day).date()]
-    if day_df.empty:
-        return []
+    if day_df.empty: return []
     now = day_df.iloc[0]
-    high_pollen_hours = int(day_df["high_pollen_flag"].sum())
     aqi_val = now["us_aqi"] if pd.notna(now["us_aqi"]) else 0
     aqi_text, aqi_color = aqi_label(aqi_val)
     temp_color = AMBER if now["temperature_2m"] > 85 else GREEN_DARK
     allergy_color = RED if now["allergy_risk"] > 60 else AMBER if now["allergy_risk"] > 30 else GREEN_DARK
     max_wind = day_df["wind_speed_10m"].max()
-    wind_color = RED if max_wind > 20 else AMBER if max_wind > 12 else GREEN_DARK
-
     return [
         kpi_card("Temp", f'{now["temperature_2m"]:.0f}°F', temp_color, f'High {day_df["temperature_2m"].max():.0f}° / Low {day_df["temperature_2m"].min():.0f}°'),
         kpi_card("Planting Score", f'{now["planting_readiness"]:.0f}/100', GREEN_DARK),
         kpi_card("Allergy Risk", f'{now["allergy_risk"]:.0f}/100', allergy_color),
         kpi_card("AQI", f'{aqi_val:.0f}', aqi_color, aqi_text),
-        kpi_card("High Pollen Hours", f'{high_pollen_hours} hrs', RED if high_pollen_hours > 12 else AMBER),
-        kpi_card("Max Wind", f'{max_wind:.0f} mph', wind_color),
+        kpi_card("High Pollen Hours", f'{int(day_df["high_pollen_flag"].sum())} hrs', RED if day_df["high_pollen_flag"].sum() > 12 else AMBER),
+        kpi_card("Max Wind", f'{max_wind:.0f} mph', RED if max_wind > 20 else AMBER if max_wind > 12 else GREEN_DARK),
     ]
 
-# Helper for chart layout
+# -----------------------------------------------------------
+# PLANTING RECOMMENDATION CARD
+# -----------------------------------------------------------
+@callback(Output("planting-card", "children"), Input("store", "data"), Input("day-selector", "value"))
+def update_planting_card(json_data, selected_day):
+    if not json_data or not selected_day: return []
+    df = pd.read_json(io.StringIO(json_data), orient="split")
+    df["timestamp_local"] = pd.to_datetime(df["timestamp_local"])
+    day_df = df[df["timestamp_local"].dt.date == pd.Timestamp(selected_day).date()]
+    if day_df.empty: return []
+    rec = get_planting_recommendation(day_df)
+
+    def tag(text, color, bg):
+        return html.Span(text, style={
+            "background": bg, "color": color, "borderRadius": "20px",
+            "padding": "3px 10px", "fontSize": "12px", "fontWeight": "600",
+            "marginRight": "6px", "marginBottom": "6px", "display": "inline-block"
+        })
+
+    plant_tags = [tag(p, GREEN_DARK, GREEN_LIGHT) for p in rec["plant_now"]]
+    avoid_tags = [tag(a, "#8B4513", "#FFF0E0") for a in rec["avoid"]]
+
+    return html.Div([
+        html.Div([
+            # Header
+            html.Div([
+                html.Span("🌾", style={"fontSize": "22px", "marginRight": "10px"}),
+                html.Span("Planting Recommendations", style={"fontWeight": "700", "fontSize": "15px", "color": GREEN_DARK}),
+                html.Span(f" · Soil {rec['soil_temp']:.0f}°F · Zone 6b Louisville", style={"fontSize": "12px", "color": MUTED, "marginLeft": "6px"}),
+            ], style={"display": "flex", "alignItems": "center", "marginBottom": "14px"}),
+
+            # Two columns
+            html.Div([
+                # Plant now
+                html.Div([
+                    html.P("✅ Plant Now", style={"margin": "0 0 8px", "fontWeight": "600", "fontSize": "13px", "color": GREEN_DARK}),
+                    html.Div(plant_tags),
+                ], style={"flex": "1", "minWidth": "200px"}),
+                # Avoid
+                html.Div([
+                    html.P("⚠️ Avoid Today", style={"margin": "0 0 8px", "fontWeight": "600", "fontSize": "13px", "color": "#8B4513"}),
+                    html.Div(avoid_tags),
+                ], style={"flex": "1", "minWidth": "200px"}),
+            ], style={"display": "flex", "gap": "24px", "flexWrap": "wrap", "marginBottom": "14px"}),
+
+            # Timing + Almanac tip
+            html.Div([
+                html.P(f"⏰ {rec['timing']}", style={"margin": "0 0 6px", "fontSize": "13px", "color": TEXT}) if rec["timing"] else None,
+                html.P(f"📖 {rec['almanac']}", style={"margin": 0, "fontSize": "13px", "color": MUTED, "fontStyle": "italic"}),
+            ]),
+        ], style={
+            "background": CARD, "borderRadius": "12px", "padding": "20px 24px",
+            "boxShadow": "0 1px 4px rgba(0,0,0,0.07)", "borderLeft": f"4px solid {GREEN_MID}",
+        }),
+    ])
+
+# -----------------------------------------------------------
+# CHART HELPERS
+# -----------------------------------------------------------
 def base_layout(yaxis_title, yaxis2_title=None):
     layout = dict(
         plot_bgcolor=CARD, paper_bgcolor=CARD,
@@ -331,18 +444,13 @@ def chart_pollen(json_data, selected_day):
 def chart_aqi(json_data, selected_day):
     if not json_data or not selected_day: return go.Figure()
     df = filter_day(json_data, selected_day)
-    fig = go.Figure()
     aqi_vals = df["us_aqi"].fillna(0)
-    colors_list = []
-    for v in aqi_vals:
-        if v <= 50:   colors_list.append(GREEN_MID)
-        elif v <= 100: colors_list.append(AMBER)
-        elif v <= 150: colors_list.append("#E59A2F")
-        else:          colors_list.append(RED)
+    colors_list = [GREEN_MID if v <= 50 else AMBER if v <= 100 else "#E59A2F" if v <= 150 else RED for v in aqi_vals]
+    fig = go.Figure()
     fig.add_trace(go.Bar(x=df["timestamp_local"], y=aqi_vals, name="AQI", marker_color=colors_list, opacity=0.85))
-    fig.add_hrect(y0=0,   y1=50,  fillcolor=GREEN_MID, opacity=0.04, line_width=0, annotation_text="Good",     annotation_position="top left", annotation_font_size=10)
-    fig.add_hrect(y0=50,  y1=100, fillcolor=AMBER,     opacity=0.04, line_width=0, annotation_text="Moderate", annotation_position="top left", annotation_font_size=10)
-    fig.add_hrect(y0=100, y1=300, fillcolor=RED,       opacity=0.04, line_width=0, annotation_text="Unhealthy",annotation_position="top left", annotation_font_size=10)
+    fig.add_hrect(y0=0,   y1=50,  fillcolor=GREEN_MID, opacity=0.04, line_width=0, annotation_text="Good",      annotation_position="top left", annotation_font_size=10)
+    fig.add_hrect(y0=50,  y1=100, fillcolor=AMBER,     opacity=0.04, line_width=0, annotation_text="Moderate",  annotation_position="top left", annotation_font_size=10)
+    fig.add_hrect(y0=100, y1=300, fillcolor=RED,       opacity=0.04, line_width=0, annotation_text="Unhealthy", annotation_position="top left", annotation_font_size=10)
     fig.update_layout(**base_layout("US AQI"))
     return fig
 
