@@ -7,6 +7,7 @@ import pandas as pd
 from dash import Dash, html, dcc, callback, Output, Input
 import plotly.graph_objects as go
 from dotenv import load_dotenv
+import io
 
 load_dotenv()
 
@@ -80,7 +81,7 @@ def load_data(_):
 def update_kpis(json_data):
     if not json_data:
         return []
-    df = pd.read_json(json_data, orient="split")
+    df = pd.read_json(io.StringIO(json_data), orient="split")
     now = df.iloc[0]
     high_pollen_hours = df["high_pollen_flag"].sum()
     temp_color = AMBER if now["temperature_2m"] > 85 else GREEN_DARK
@@ -101,7 +102,7 @@ def base_layout(yaxis_title, yaxis2_title=None):
 
 @callback(Output("chart-readiness", "figure"), Input("store", "data"))
 def chart_readiness(json_data):
-    df = pd.read_json(json_data, orient="split")
+    df = pd.read_json(io.StringIO(json_data), orient="split")
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=df["timestamp_local"], y=df["planting_readiness"], name="Planting Readiness", fill="tozeroy", line=dict(color=GREEN_MID, width=2)))
     fig.add_trace(go.Scatter(x=df["timestamp_local"], y=df["allergy_risk"], name="Allergy Risk", line=dict(color=RED, width=2, dash="dot")))
@@ -110,7 +111,7 @@ def chart_readiness(json_data):
 
 @callback(Output("chart-temp", "figure"), Input("store", "data"))
 def chart_temp(json_data):
-    df = pd.read_json(json_data, orient="split")
+    df = pd.read_json(io.StringIO(json_data), orient="split")
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=df["timestamp_local"], y=df["temperature_2m"], name="Temp (F)", line=dict(color=AMBER, width=2)))
     fig.add_trace(go.Scatter(x=df["timestamp_local"], y=df["relative_humidity_2m"], name="Humidity (%)", line=dict(color=GREEN_MID, width=2, dash="dot"), yaxis="y2"))
@@ -119,7 +120,7 @@ def chart_temp(json_data):
 
 @callback(Output("chart-pollen", "figure"), Input("store", "data"))
 def chart_pollen(json_data):
-    df = pd.read_json(json_data, orient="split")
+    df = pd.read_json(io.StringIO(json_data), orient="split")
     fig = go.Figure()
     colors = [GREEN_MID, AMBER, RED, SOIL, GREEN_DARK, GREEN_LIGHT]
     for col, color in zip(["grass_pollen", "ragweed_pollen", "birch_pollen", "alder_pollen", "mugwort_pollen", "olive_pollen"], colors):
@@ -129,7 +130,7 @@ def chart_pollen(json_data):
 
 @callback(Output("chart-aqi", "figure"), Input("store", "data"))
 def chart_aqi(json_data):
-    df = pd.read_json(json_data, orient="split")
+    df = pd.read_json(io.StringIO(json_data), orient="split")
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=df["timestamp_local"], y=df["us_aqi"], name="Overall AQI", fill="tozeroy", line=dict(color=AMBER, width=2)))
     fig.add_hrect(y0=0, y1=50, fillcolor=GREEN_LIGHT, opacity=0.15, line_width=0, annotation_text="Good", annotation_position="top left")
@@ -140,7 +141,7 @@ def chart_aqi(json_data):
 
 @callback(Output("chart-soil", "figure"), Input("store", "data"))
 def chart_soil(json_data):
-    df = pd.read_json(json_data, orient="split")
+    df = pd.read_json(io.StringIO(json_data), orient="split")
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=df["timestamp_local"], y=df["soil_temperature_0cm"], name="Soil Temp (F)", line=dict(color=SOIL, width=2)))
     fig.add_trace(go.Scatter(x=df["timestamp_local"], y=df["soil_moisture_0_to_1cm"], name="Soil Moisture", line=dict(color=GREEN_MID, width=2, dash="dot"), yaxis="y2"))
@@ -149,7 +150,7 @@ def chart_soil(json_data):
 
 @callback(Output("chart-precip", "figure"), Input("store", "data"))
 def chart_precip(json_data):
-    df = pd.read_json(json_data, orient="split")
+    df = pd.read_json(io.StringIO(json_data), orient="split")
     fig = go.Figure()
     fig.add_trace(go.Bar(x=df["timestamp_local"], y=df["precipitation_probability"], name="Rain Probability (%)", marker_color=GREEN_MID, opacity=0.7))
     fig.add_trace(go.Scatter(x=df["timestamp_local"], y=df["precipitation"], name="Precipitation (in)", line=dict(color=GREEN_DARK, width=2), yaxis="y2"))
