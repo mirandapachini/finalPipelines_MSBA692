@@ -1,5 +1,3 @@
----
-
 # 🌱 **Garden & Allergy Forecast Analytics Platform**  
 **Environmental Intelligence · ETL Pipeline · Supabase · Power BI · Dash Dashboard**
 
