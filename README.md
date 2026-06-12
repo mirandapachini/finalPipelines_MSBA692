@@ -23,10 +23,10 @@ This project includes:
 - [Data Sources](#data-sources)  
 - [ETL Pipeline](#etl-pipeline)  
 - [Database Schema](#database-schema)  
-- [Dash Dashboard](#dash-dashboard)  
 - [Power BI Prototype](#power-bi-prototype)  
+- [Dash Dashboard](#dash-dashboard)  
 - [Setup & Installation](#setup--installation)  
-- [What I Learned](#what-i-learned)  
+- [Lessons Learned](#lessons-learned)  
 - [Challenges](#challenges)  
 - [Outcome](#outcome)  
 
@@ -247,45 +247,53 @@ http://localhost:8050
 
 ---
 
-# 🧠 **What I Learned**
+# 🎓 **Lessons Learned**
+
+This project grew far beyond a simple dashboard and became a full end‑to‑end engineering build. Along the way, I learned:
 
 ### **About the Data**
-- Environmental APIs use inconsistent scales  
+- Environmental APIs use inconsistent scales and formats  
 - Precipitation required normalization  
 - Soil temperature is the strongest planting indicator  
-- Pollen data is often sparse  
-- Aligning hourly data across sources is essential  
+- Pollen data is often sparse or missing  
+- Aligning hourly data across multiple endpoints is essential  
 
 ### **About the Tools**
-**Power BI**
-- Not ideal for API‑driven, hourly environmental data  
-- SSL + staging table issues slowed development  
+- **Power BI** is not ideal for API‑driven, hourly environmental data  
+  - SSL issues with Supabase  
+  - Slicer limitations  
+  - DAX debugging friction  
+- **Dash** is dramatically faster for custom logic  
+  - Direct SQL connections  
+  - Full control over layout and callbacks  
+  - Easier debugging and iteration  
 
-**Dash**
-- Direct SQL connection  
-- Full control over logic  
-- Easier debugging  
-- Faster development  
-- Perfect for custom KPIs and models  
+### **About Engineering & Debugging**
+- Environment setup is fragile — misplaced `.env` files or incorrect paths can break everything  
+- Cloud database credentials require precision (URL‑encoding, secure storage, correct formatting)  
+- Pandas + SQLAlchemy is the reliable pairing for database reads  
+- Git will surface every misstep — merge conflicts, tracked secrets, deleted files  
+- Debugging is part of the process — from empty files to cloud outages, each issue revealed how the system really works  
+- The project naturally expanded — what began as a simple visualization became a full ETL pipeline, database model, recommendation engine, and interactive app  
 
 ---
 
-# 🧩 **What I Set Out to Do vs What I Built**
+# 🧨 **Challenges**
 
-### **Set Out To Do**
-- Simple dashboard  
-- Basic API pull  
-- Clean readiness score  
-- Straightforward star schema  
+A summary of the major issues encountered:
 
-### **Ended Up With**
-- Full automated ETL pipeline  
-- Multi‑API integration  
-- Complex transformations  
-- Multi‑table Supabase database  
-- Advanced modeling  
-- A polished Dash dashboard  
-- A planting recommendation engine  
+- `app.py` saved empty and had to be rewritten via terminal  
+- `.env` and `.gitignore` accidentally created as folders  
+- psycopg2 rejected the full Supabase username  
+- Password was exposed and had to be reset  
+- Supabase outage caused false authentication failures  
+- `pd.read_json` treated JSON as a file path  
+- SQLAlchemy required for pandas compatibility  
+- Power BI slicers failed to filter staging tables  
+- SSL issues prevented Power BI from connecting  
+- Dash couldn’t find `.env` after moving files  
+- Git merge conflicts involving `.env`  
+- Data alignment issues across API endpoints  
 
 ---
 
@@ -303,20 +311,19 @@ Built quickly, cleanly, and stress‑free.
 
 ---
 
-
-# Garden & Allergy Forecast Dashboard
+# 🌱 **Garden & Allergy Forecast Dashboard**
 
 ## Dash Dashboard
 Run `app.py` to launch the interactive weather and allergy dashboard for gardeners.
 
 ### Setup
-1. Add your database password to `.env`: `DB_PASSWORD=your-password`
-2. Install dependencies: `pip install -r requirements.txt`
-3. Run: `python app.py`
+1. Add your database password to `.env`: `DB_PASSWORD=your-password`  
+2. Install dependencies: `pip install -r requirements.txt`  
+3. Run: `python app.py`  
 4. Open browser at `http://localhost:8050`
 
 ## Features
-- 7-day weather & pollen forecast
-- Planting recommendations (Farmers' Almanac, Zone 6b)
-- Allergy risk & AQI tracking
-- Best time to garden today
+- 7‑day weather & pollen forecast  
+- Planting recommendations (Farmers' Almanac, Zone 6b)  
+- Allergy risk & AQI tracking  
+- Best time to garden today  
