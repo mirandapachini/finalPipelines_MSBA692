@@ -1,310 +1,118 @@
-# 🌱 **Garden & Allergy Forecast Analytics Platform**  
-**Environmental Intelligence · ETL Pipeline · Supabase · Power BI · Dash Dashboard**
+# 🌱 Garden & Allergy Forecast Analytics Platform
 
-A full end‑to‑end analytics system that unifies weather, pollen, soil, air quality, and precipitation data into a single platform for gardeners and allergy‑sensitive users in **Zone 6b (Louisville, KY)**.
+A portfolio-ready analytics project that turns environmental data into actionable recommendations for gardeners and allergy-sensitive users in Louisville, Kentucky. This repository demonstrates a full workflow from API ingestion and transformation to database loading and interactive visualization.
 
-This project includes:
+## Why this project stands out
 
-- Automated **Python ETL pipeline**  
-- **Supabase Postgres** database  
-- Clean **star schema**  
-- **Power BI prototype**  
-- Fully interactive **Dash dashboard**  
-- **Planting recommendation engine**  
-- **7‑day environmental forecast**  
-- **Best‑time‑to‑garden model**
+This project is designed to show employers that I can build practical, end-to-end data products rather than isolated scripts or notebooks. It combines:
 
----
+- real-world data acquisition from public APIs
+- robust transformation and validation logic
+- database-backed analytics workflows
+- a polished user experience for decision support
 
-## 📌 **Table of Contents**
-- [Overview](#overview)  
-- [Architecture](#architecture)  
-- [Features](#features)  
-- [Data Sources](#data-sources)  
-- [ETL Pipeline](#etl-pipeline)  
-- [Database Schema](#database-schema)  
-- [Power BI Prototype](#power-bi-prototype)  
-- [Dash Dashboard](#dash-dashboard)  
-- [Setup & Installation](#setup--installation)  
-- [Lessons Learned](#lessons-learned)  
-- [Challenges](#challenges)  
-- [Outcome](#outcome)  
+## Executive summary
 
----
+I built a full environmental analytics solution that gathers weather, air quality, soil, and pollen information, transforms it into a consistent dataset, and delivers actionable guidance through an interactive dashboard. The project reflects the kind of work expected in data engineering, analytics engineering, and analytics product roles: ingestion, modeling, transformation, and presentation.
 
-# 🌿 **Overview**
+## Impact statement
 
-Gardeners and allergy‑sensitive users often need to check multiple apps for:
+This project turns fragmented environmental signals into a single decision-support experience. Instead of asking users to compare multiple sources manually, it consolidates the information into a clear, usable product that supports planning, forecasting, and daily decision-making.
 
-- Weather  
-- Pollen  
-- Soil temperature  
-- Rain timing  
-- Air quality  
-- Seasonal planting windows  
+- API-based data engineering
+- Python ETL development
+- SQL and database modeling
+- Interactive dashboard development
+- Product-oriented decision logic for recommendations
 
-This project solves that by creating a **single, unified analytics platform** that answers:
+## What I built
 
-> **“What’s the best time to garden today — and what should I plant?”**
+- A repeatable ETL workflow that collects weather, soil, air quality, and pollen data
+- A PostgreSQL/Supabase-ready schema for structured analytics
+- A recommendation engine that suggests planting actions based on current conditions
+- A Dash dashboard that presents forecasts, health signals, and planting guidance in a polished UI
 
----
+## Core technologies
 
-# 🧱 **Architecture**
+- Python
+- Pandas and SQLAlchemy
+- PostgreSQL / Supabase
+- Dash and Plotly
+- Open-Meteo APIs
+- SQL schema design
 
-```
-Open-Meteo API
-      ↓
-Python ETL (hourly)
-      ↓
-Supabase Postgres (staging + fact tables)
-      ↓
-Power BI Prototype (initial)
-      ↓
-Dash Dashboard (final interactive app)
+## Project architecture
+
+```mermaid
+flowchart LR
+    A[Open-Meteo APIs] --> B[Python ETL scripts]
+    B --> C[Transformed environmental dataset]
+    C --> D[PostgreSQL / Supabase]
+    D --> E[Dash dashboard]
+    E --> F[Planting and allergy recommendations]
 ```
 
----
+## Key capabilities
 
-# 🌦️ **Features**
+- 7-day environmental forecasting
+- Pollen and AQI monitoring
+- Soil temperature and moisture analysis
+- Planting readiness scoring
+- Allergy-risk awareness for daily decision-making
 
-### **Environmental Forecasting**
-- 7‑day hourly weather forecast  
-- Pollen levels (grass, ragweed, birch, alder, mugwort, olive)  
-- Air Quality Index (US AQI)  
-- Soil temperature & moisture  
-- Rain probability & precipitation  
+## Repository structure
 
-### **Planting Recommendation Engine**
-Based on:
-- Soil temperature  
-- Soil moisture  
-- Rain probability  
-- Wind speed  
-- Allergy risk  
-- Seasonal planting windows (Zone 6b)  
+- [dashboard/](dashboard/) — Dash application and visualization logic
+- [docs/](docs/) — architecture, setup, and project overview notes
+- [etl/](etl/) — exploratory ETL notebooks
+- [notebooks/](notebooks/) — reusable ETL scripts and analysis notebooks
+- [sql/](sql/) — schema and load scripts
+- [data/](data/) — source and processed datasets
+- [tests/](tests/) — lightweight smoke tests for project entry points
 
-Outputs:
-- What to plant today  
-- What to avoid  
-- Almanac‑style guidance  
-- Best gardening time  
+## Quick start
 
-### **Interactive Dash Dashboard**
-- KPI cards  
-- Trend charts  
-- Daily selector  
-- Real‑time banners (rain alerts, wind alerts, best gardening time)  
-
----
-
-# 🌐 **Data Sources**
-
-All data is pulled from **Open‑Meteo**:
-
-- Weather API  
-- Pollen API  
-- Air Quality API  
-- Soil Conditions API  
-
----
-
-# 🔄 **ETL Pipeline**
-
-### **Extract**
-- Hourly API calls  
-- Multiple endpoints merged into one dataset  
-
-### **Transform**
-- Convert timestamps → local datetime  
-- Normalize precipitation (0–1000 → percent)  
-- Align hourly data across sources  
-- Handle missing values  
-- Validate ranges  
-- Compute derived fields:
-  - `planting_readiness`
-  - `allergy_risk`
-  - `high_pollen_flag`
-
-### **Load**
-- Writes cleaned data into:
-  - `staging_environmental_raw`  
-  - (Optional) `fact_environmental_conditions`  
-
----
-
-# 🗄️ **Database Schema**
-
-### **dim_datetime**
-- Clean date  
-- Day of week  
-- Month  
-- Season  
-
-### **staging_environmental_raw**
-Contains:
-- `timestamp_local`  
-- `temperature_2m`  
-- `relative_humidity_2m`  
-- `precipitation_probability`  
-- `precipitation`  
-- `soil_temperature_0cm`  
-- `soil_moisture_0_to_1cm`  
-- `us_aqi`  
-- Pollen metrics  
-- Derived scores  
-
-### **fact_environmental_conditions**
-- Daily aggregates  
-- Flags  
-- Readiness metrics  
-
----
-
-# 📊 **Power BI Prototype**
-
-The first version of the dashboard was built in Power BI.
-
-### **Included Visuals**
-- Best overall day  
-- Readiness score  
-- Allergy risk  
-- Pollen trends  
-- AQI bands  
-- Soil moisture  
-- Precipitation probability  
-
-### **Why It Was Replaced**
-Power BI introduced several blockers:
-- SSL issues connecting to Supabase  
-- Slicers not filtering staging tables  
-- Required TREATAS workarounds  
-- DAX debugging friction  
-- Blank visuals hiding errors  
-
-This led to rebuilding the dashboard in Dash.
-
----
-
-# ⚡ **Dash Dashboard**
-
-The final dashboard (`app.py`) includes:
-
-### **Header**
-- Weather emoji  
-- Location  
-- Current date  
-
-### **Banners**
-- Best time to garden  
-- Rain alerts  
-- Wind advisories  
-
-### **KPIs**
-- Temperature  
-- Planting score  
-- Allergy risk  
-- AQI  
-- High‑pollen hours  
-- Max wind  
-
-### **Charts**
-- Planting readiness vs allergy risk  
-- Temperature + humidity  
-- Pollen breakdown  
-- AQI bars with health bands  
-- Soil temperature + moisture  
-- Precipitation probability + rainfall  
-
----
-
-# 🛠️ **Setup & Installation**
-
-### **1. Clone the repo**
-```
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
-```
-
-### **2. Add your `.env`**
-```
-DB_PASSWORD=your-password
-```
-
-### **3. Install dependencies**
-```
+```bash
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-```
-
-### **4. Run the Dash app**
-```
+cp .env.example .env
 python app.py
 ```
 
-### **5. Open in browser**
-```
-http://localhost:8050
-```
+Then open http://localhost:8050.
 
----
+For setup details, see [docs/SETUP.md](docs/SETUP.md).
 
-# 🎓 **Lessons Learned**
+## What this demonstrates for employers
 
-This project grew far beyond a simple dashboard and became a full end‑to‑end engineering build. Along the way, I learned:
+- I can connect external data sources and build reliable ingestion workflows
+- I understand data transformation, validation, and schema design
+- I can move from raw data to a user-facing analytics experience
+- I can structure a repository in a way that is clear, explainable, and easy to review
 
-### **About the Data**
-- Environmental APIs use inconsistent scales and formats  
-- Precipitation required normalization  
-- Soil temperature is the strongest planting indicator  
-- Pollen data is often sparse or missing  
-- Aligning hourly data across multiple endpoints is essential  
+## Skills aligned to common roles
 
-### **About the Tools**
-- **Power BI** is not ideal for API‑driven, hourly environmental data  
-  - SSL issues with Supabase  
-  - Slicer limitations  
-  - DAX debugging friction  
-- **Dash** is dramatically faster for custom logic  
-  - Direct SQL connections  
-  - Full control over layout and callbacks  
-  - Easier debugging and iteration  
+### Data Engineer
+- ETL development
+- API ingestion
+- Data quality handling
+- Database-oriented workflows
 
-### **About Engineering & Debugging**
-- Environment setup is fragile — misplaced `.env` files or incorrect paths can break everything  
-- Cloud database credentials require precision (URL‑encoding, secure storage, correct formatting)  
-- Pandas + SQLAlchemy is the reliable pairing for database reads  
-- Git will surface every misstep — merge conflicts, tracked secrets, deleted files  
-- Debugging is part of the process — from empty files to cloud outages, each issue revealed how the system really works  
-- The project naturally expanded — what began as a simple visualization became a full ETL pipeline, database model, recommendation engine, and interactive app  
+### Analytics Engineer
+- Structured data modeling
+- SQL-based transformation logic
+- Analytical dataset design
 
----
+### Data Analyst / BI Developer
+- Dashboard storytelling
+- KPI-oriented visualization
+- Decision-support product design
 
-# 🧨 **Challenges**
+## Additional documentation
 
-A summary of the major issues encountered:
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md)
+- [docs/SETUP.md](docs/SETUP.md)
+- [docs/PORTFOLIO_SUMMARY.md](docs/PORTFOLIO_SUMMARY.md)
 
-- `app.py` saved empty and had to be rewritten via terminal  
-- `.env` and `.gitignore` accidentally created as folders  
-- psycopg2 rejected the full Supabase username  
-- Password was exposed and had to be reset  
-- Supabase outage caused false authentication failures  
-- `pd.read_json` treated JSON as a file path  
-- SQLAlchemy required for pandas compatibility  
-- Power BI slicers failed to filter staging tables  
-- SSL issues prevented Power BI from connecting  
-- Dash couldn’t find `.env` after moving files  
-- Git merge conflicts involving `.env`  
-- Data alignment issues across API endpoints  
-
----
-
-# 🎉 **Outcome**
-
-This project evolved into a complete environmental analytics system:
-
-- Automated ETL  
-- Clean database  
-- Derived environmental intelligence  
-- A full planting recommendation engine  
-- A polished, interactive Dash dashboard  
-
-Built quickly, cleanly, and stress‑free.
