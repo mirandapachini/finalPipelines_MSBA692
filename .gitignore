@@ -4,3 +4,7 @@ venv/
 __pycache__/
 .cache/
 *.pyc
+
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/

@@ -1,7 +1,11 @@
 # LinkedIn Summary
 
-Built an end-to-end environmental analytics project that combines API-driven data engineering, SQL modeling, and interactive dashboard development. The project ingests weather, soil, air quality, and pollen data, transforms it into a structured dataset, and delivers actionable planting and allergy insights through a Dash application.
+Environmental analytics project that demonstrates end-to-end data product delivery.
 
-Key skills demonstrated: Python, Pandas, SQLAlchemy, PostgreSQL/Supabase, ETL pipelines, dashboard development, and data storytelling.
+- Built a production-style ETL workflow to ingest weather, soil, air quality, and pollen data from external APIs.
+- Transformed and modeled the dataset for PostgreSQL / Supabase, including readiness and allergy signals.
+- Developed an interactive Dash dashboard to surface planting guidance and daily health-risk insights.
 
-This work highlights experience across data ingestion, transformation, database design, and user-facing analytics product development.
+Key skills: Python, Pandas, SQLAlchemy, PostgreSQL/Supabase, ETL pipeline development, dashboard visualization, and data storytelling.
+
+This project highlights experience with data engineering, analytics modeling, and building user-facing insights for decision support.

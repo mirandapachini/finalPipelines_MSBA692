@@ -31,3 +31,13 @@ python app.py
 ```
 
 Then open http://localhost:8050.
+
+## Run the ETL pipeline
+
+```bash
+python etl/openmeteo_etl_pipeline.py
+```
+
+## Exploration notebooks
+
+- `notebooks/` contains analysis and research notebooks used to prototype the ETL workflow and validate results.

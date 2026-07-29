@@ -9,7 +9,7 @@
 
 ## Components
 
-- ETL scripts: [notebooks/openmeteo_etl_pipeline.py](../notebooks/openmeteo_etl_pipeline.py)
+- ETL scripts: [etl/openmeteo_etl_pipeline.py](../etl/openmeteo_etl_pipeline.py)
 - Dashboard app: [dashboard/app.py](../dashboard/app.py)
 - SQL schema: [sql/schema_environmental.sql](../sql/schema_environmental.sql)
 - Data assets: [data/](../data/)

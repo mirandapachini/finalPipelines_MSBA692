@@ -64,8 +64,8 @@ flowchart LR
 
 - [dashboard/](dashboard/) — Dash application and visualization logic
 - [docs/](docs/) — architecture, setup, and project overview notes
-- [etl/](etl/) — exploratory ETL notebooks
-- [notebooks/](notebooks/) — reusable ETL scripts and analysis notebooks
+- [etl/](etl/) — reusable ETL scripts and pipeline modules
+- [notebooks/](notebooks/) — exploratory notebooks and analysis
 - [sql/](sql/) — schema and load scripts
 - [data/](data/) — source and processed datasets
 - [tests/](tests/) — lightweight smoke tests for project entry points
@@ -111,6 +111,9 @@ For setup details, see [docs/SETUP.md](docs/SETUP.md).
 
 ## Additional documentation
 
+For a quick view of the repository organization and what belongs in each folder, see [docs/REPO_LAYOUT.md](docs/REPO_LAYOUT.md).
+
+- [docs/REPO_LAYOUT.md](docs/REPO_LAYOUT.md)
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md)
 - [docs/SETUP.md](docs/SETUP.md)
